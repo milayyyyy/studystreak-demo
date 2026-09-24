@@ -33,9 +33,30 @@ export function ReviewScreen({
   returnLabel?: string;
 }) {
   const total = cards.length;
+  if (total === 0) {
+    return (
+      <div className="flex flex-col gap-4">
+        <header>
+          <p className="text-xs font-extrabold tracking-[0.16em] text-orange-500 uppercase">
+            {eyebrow}
+          </p>
+          <h1 className="mt-1 text-2xl font-extrabold tracking-tight">
+            No cards for this subject yet
+          </h1>
+        </header>
+        <p className="text-sm font-semibold text-stone-500">
+          Add a note and we’ll turn it into a small daily set.
+        </p>
+        <Button className="h-12 rounded-2xl text-base font-extrabold" onClick={onHome}>
+          {returnLabel}
+        </Button>
+      </div>
+    );
+  }
   const position = Math.min(index + 1, total);
   const pace = finished ? 100 : Math.round((index / total) * 100);
   const card = cards[Math.min(index, total - 1)];
+  if (!card) return null;
 
   if (finished) {
     return (

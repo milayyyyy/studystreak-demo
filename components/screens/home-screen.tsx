@@ -3,7 +3,8 @@
 import { Flame, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress, ProgressIndicator, ProgressTrack } from "@/components/ui/progress";
-import { daysBetween, formatLong, formatShort, TODAY } from "@/lib/demo";
+import { SubjectFilter } from "@/components/subject-filter";
+import { daysBetween, formatLong, formatShort, TODAY, type SubjectPlan } from "@/lib/demo";
 
 export function HomeScreen({
   subject,
@@ -16,9 +17,15 @@ export function HomeScreen({
   onDismissMissed,
   onStart,
   onSetup,
+  subjects,
+  filter,
+  onFilter,
 }: {
   subject: string;
   examDate: Date;
+  subjects: SubjectPlan[];
+  filter: string;
+  onFilter: (id: string) => void;
   streak: number;
   dueCount: number;
   redistributed: number;
@@ -56,6 +63,8 @@ export function HomeScreen({
           Plan
         </Button>
       </header>
+
+      <SubjectFilter subjects={subjects} value={filter} onChange={onFilter} />
 
       <section className="relative overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-orange-500 via-orange-500 to-rose-500 p-5 text-white shadow-lg shadow-orange-200">
         <Flame className="absolute -top-3 -right-2 size-28 text-white/15" />

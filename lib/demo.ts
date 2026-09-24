@@ -9,6 +9,7 @@ export type NoteKind = "PDF" | "Notes" | "Slides"
 
 export type StudyNote = {
   id: string
+  subjectId: string
   title: string
   kind: NoteKind
   detail: string
@@ -19,7 +20,23 @@ export type StudyNote = {
   fresh?: boolean
 }
 
-export type Screen = "home" | "review" | "notes" | "summary" | "progress" | "setup"
+export type SubjectPlan = {
+  id: string
+  name: string
+  examDate: Date
+  dueToday: number
+  streak: number
+  cardIds: string[]
+}
+
+export type Screen =
+  | "home"
+  | "dashboard"
+  | "review"
+  | "notes"
+  | "summary"
+  | "progress"
+  | "setup"
 
 export function startOfDay(date = new Date()) {
   const next = new Date(date)
@@ -167,9 +184,90 @@ export function averageStudiedMinutes() {
   return Math.round(total / STUDIED_OFFSETS.length)
 }
 
+export const EXTRA_CARDS: Flashcard[] = [
+  {
+    id: "s1",
+    topic: "Spanish",
+    question: "How do you say “I would like the chicken” in Spanish?",
+    answer: "Quisiera el pollo.",
+  },
+  {
+    id: "s2",
+    topic: "Spanish",
+    question: "What is the difference between ser and estar for location?",
+    answer: "Estar is for location and temporary states. Ser is for identity and origin.",
+  },
+  {
+    id: "s3",
+    topic: "Spanish",
+    question: "Which article goes with “leche”?",
+    answer: "La leche. Leche is feminine.",
+  },
+  {
+    id: "s4",
+    topic: "Spanish",
+    question: "How do you ask for the check?",
+    answer: "La cuenta, por favor.",
+  },
+  {
+    id: "h1",
+    topic: "History",
+    question: "What shift defines the Industrial Revolution?",
+    answer: "Work moved from hand production at home to machines in factories.",
+  },
+  {
+    id: "h2",
+    topic: "History",
+    question: "Why did factory towns grow so quickly?",
+    answer: "Mills needed labor, so people moved from farms to live near the work.",
+  },
+  {
+    id: "h3",
+    topic: "History",
+    question: "Name one cost of industrial growth for workers.",
+    answer: "Long hours, low pay, and unsafe factory conditions.",
+  },
+]
+
+export function starterSubjects(): SubjectPlan[] {
+  return [
+    {
+      id: "bio",
+      name: "Biology Midterm",
+      examDate: addDays(TODAY, 18),
+      dueToday: 10,
+      streak: 5,
+      cardIds: FLASHCARDS.map((card) => card.id),
+    },
+    {
+      id: "spanish",
+      name: "Spanish Quiz",
+      examDate: addDays(TODAY, 6),
+      dueToday: 4,
+      streak: 2,
+      cardIds: ["s1", "s2", "s3", "s4"],
+    },
+    {
+      id: "history",
+      name: "World History Essay",
+      examDate: addDays(TODAY, 33),
+      dueToday: 3,
+      streak: 8,
+      cardIds: ["h1", "h2", "h3"],
+    },
+  ]
+}
+
+export function sortByExam(subjects: SubjectPlan[]) {
+  return [...subjects].sort(
+    (a, b) => a.examDate.getTime() - b.examDate.getTime(),
+  )
+}
+
 export const STARTER_NOTES: StudyNote[] = [
   {
     id: "n1",
+    subjectId: "bio",
     title: "Chapter 4 · Cell structure",
     kind: "PDF",
     detail: "12 pages · lecture packet",
@@ -185,6 +283,7 @@ export const STARTER_NOTES: StudyNote[] = [
   },
   {
     id: "n2",
+    subjectId: "bio",
     title: "Lecture 7 · Photosynthesis",
     kind: "Notes",
     detail: "Handwritten summary",
@@ -200,6 +299,7 @@ export const STARTER_NOTES: StudyNote[] = [
   },
   {
     id: "n3",
+    subjectId: "bio",
     title: "Lab · Mitosis slides",
     kind: "Slides",
     detail: "8 slides · microscope lab",
@@ -215,6 +315,7 @@ export const STARTER_NOTES: StudyNote[] = [
   },
   {
     id: "n4",
+    subjectId: "bio",
     title: "Chapter 6 · Genetics overview",
     kind: "PDF",
     detail: "9 pages · practice problems",
@@ -227,6 +328,38 @@ export const STARTER_NOTES: StudyNote[] = [
       "The same genotype can look different in a different environment.",
     ],
     cardIds: ["c7", "c8"],
+  },
+  {
+    id: "n5",
+    subjectId: "spanish",
+    title: "Unidad 3 · La comida",
+    kind: "Notes",
+    detail: "Vocab list · restaurant dialogue",
+    addedLabel: "Added Wed",
+    summary:
+      "This unit is restaurant Spanish: what you want to eat, which article a food takes, and how to ask for the check. Estar covers where you are; ser covers who you are.",
+    points: [
+      "Quisiera is the polite way to order.",
+      "Estar is location. Ser is identity.",
+      "La cuenta, por favor ends the meal.",
+    ],
+    cardIds: ["s1", "s2", "s3", "s4"],
+  },
+  {
+    id: "n6",
+    subjectId: "history",
+    title: "Chapter 9 · Industrial Revolution",
+    kind: "PDF",
+    detail: "6 pages · essay outline",
+    addedLabel: "Added Thu",
+    summary:
+      "The essay argues that machines pulled work into factories and pulled people into towns. Growth was real, and so were the long hours and unsafe floors that came with it.",
+    points: [
+      "Production moved from homes to machines.",
+      "Factory towns grew because the mills needed workers.",
+      "The essay needs one human cost, not only the invention.",
+    ],
+    cardIds: ["h1", "h2", "h3"],
   },
 ]
 

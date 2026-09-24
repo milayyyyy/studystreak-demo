@@ -7,7 +7,8 @@ This build is presentation-ready mock data only. Nothing is uploaded or saved on
 ## What’s included
 
 - **Plan setup** — subject name and exam date, then a confirmation that the work is split into daily reviews.
-- **Home** — today’s card batch, streak, exam countdown, and a missed-day note that redistributes yesterday’s cards.
+- **Home** — today’s card batch, streak, exam countdown, a subject filter, and a missed-day note that redistributes yesterday’s cards.
+- **Dashboard** — every subject and exam date, soonest first, with cards due, notes, and streak.
 - **Review** — flip a card, then mark it **Got it** or **Still learning**.
 - **Notes** — sample sources for Biology Midterm. Open one to study a summary, check off the ideas, then practice the flashcards from that note. Pasted notes get a mock summary in the browser.
 - **Progress** — two-week calendar, current streak, longest streak, and average daily minutes.

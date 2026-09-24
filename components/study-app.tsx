@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { BottomNav } from "@/components/bottom-nav";
+import { DashboardScreen } from "@/components/screens/dashboard-screen";
 import { HomeScreen } from "@/components/screens/home-screen";
 import { NoteSummaryScreen } from "@/components/screens/note-summary-screen";
 import { NotesScreen } from "@/components/screens/notes-screen";
@@ -11,26 +12,32 @@ import { ReviewScreen } from "@/components/screens/review-screen";
 import {
   averageStudiedMinutes,
   dateKey,
-  defaultExamDate,
+  addDays,
+  EXTRA_CARDS,
   FLASHCARDS,
   INITIAL_STREAK,
   LONGEST_STREAK,
   REDISTRIBUTED_CARDS,
+  sortByExam,
   STARTER_NOTES,
+  starterSubjects,
   studiedKeySet,
   summarizeNote,
   TODAY,
   type Flashcard,
   type Screen,
   type StudyNote,
+  type SubjectPlan,
 } from "@/lib/demo";
 
 export function StudyApp() {
   const [screen, setScreen] = useState<Screen>("home");
-  const [subject, setSubject] = useState("Biology Midterm");
-  const [examDate, setExamDate] = useState(defaultExamDate);
+  const [subjects, setSubjects] = useState<SubjectPlan[]>(() =>
+    sortByExam(starterSubjects()),
+  );
+  const [filter, setFilter] = useState("all");
   const [notes, setNotes] = useState<StudyNote[]>(STARTER_NOTES);
-  const [extraCards, setExtraCards] = useState<Flashcard[]>([]);
+  const [extraCards, setExtraCards] = useState<Flashcard[]>(EXTRA_CARDS);
   const [openNoteId, setOpenNoteId] = useState<string | null>(null);
   const [deckMode, setDeckMode] = useState<"daily" | "note">("daily");
   const [showMissed, setShowMissed] = useState(true);
@@ -48,13 +55,20 @@ export function StudyApp() {
     [extraCards],
   );
   const openNote = notes.find((note) => note.id === openNoteId) ?? null;
+  const activeSubjects =
+    filter === "all" ? subjects : subjects.filter((item) => item.id === filter);
+  const focus = activeSubjects[0] ?? subjects[0];
+  const visibleNotes =
+    filter === "all" ? notes : notes.filter((note) => note.subjectId === filter);
   const deck = useMemo(() => {
-    if (deckMode === "daily" || !openNote) return FLASHCARDS;
-    const ids = new Set(openNote.cardIds);
-    const matched = allCards.filter((card) => ids.has(card.id));
-    return matched.length > 0 ? matched : FLASHCARDS;
-  }, [allCards, deckMode, openNote]);
-  const dueCount = FLASHCARDS.length;
+    if (deckMode === "note" && openNote) {
+      const ids = new Set(openNote.cardIds);
+      return allCards.filter((card) => ids.has(card.id));
+    }
+    const dailyIds = new Set(activeSubjects.flatMap((item) => item.cardIds));
+    return allCards.filter((card) => dailyIds.has(card.id));
+  }, [activeSubjects, allCards, deckMode, openNote]);
+  const dueCount = activeSubjects.reduce((sum, item) => sum + item.dueToday, 0);
 
   function resetReview() {
     setIndex(0);
@@ -121,16 +135,22 @@ export function StudyApp() {
         <main className="px-4 pt-6 pb-28">
           {screen === "home" && (
             <HomeScreen
-              subject={subject}
-              examDate={examDate}
-              streak={streak}
+              subject={filter === "all" ? "All subjects" : focus.name}
+              examDate={focus.examDate}
+              streak={filter === "all" ? streak : focus.streak}
               dueCount={dueCount}
-              redistributed={REDISTRIBUTED_CARDS}
+              redistributed={filter === "all" || filter === "bio" ? REDISTRIBUTED_CARDS : 0}
               studiedToday={studiedToday}
-              showMissed={showMissed}
+              showMissed={showMissed && (filter === "all" || filter === "bio")}
               onDismissMissed={() => setShowMissed(false)}
               onStart={openDailyReview}
               onSetup={() => setScreen("setup")}
+              subjects={subjects}
+              filter={filter}
+              onFilter={(id) => {
+                setFilter(id);
+                if (deckMode === "daily") resetReview();
+              }}
             />
           )}
           {screen === "review" && (
@@ -149,24 +169,54 @@ export function StudyApp() {
               returnLabel={deckMode === "note" ? "Back to summary" : "Back to today"}
             />
           )}
+          {screen === "dashboard" && (
+            <DashboardScreen
+              subjects={subjects}
+              notes={notes}
+              filter={filter}
+              onFilter={setFilter}
+              onOpen={(id) => {
+                setFilter(id);
+                setScreen("home");
+              }}
+              onAdd={() => setScreen("setup")}
+            />
+          )}
           {screen === "notes" && (
             <NotesScreen
-              subject={subject}
-              notes={notes}
+              subject={filter === "all" ? "All subjects" : focus.name}
+              notes={visibleNotes}
+              subjects={subjects}
+              filter={filter}
+              onFilter={setFilter}
               onAdd={(note) => {
                 const built = summarizeNote(note.title, note.pasted);
                 const id = `n-${Date.now()}`;
+                const subjectId = filter === "all" ? subjects[0].id : filter;
+                const cardIds = built.cards.map((card) => card.id);
                 setExtraCards((current) => [...built.cards, ...current]);
+                setSubjects((current) =>
+                  current.map((item) =>
+                    item.id === subjectId
+                      ? {
+                          ...item,
+                          cardIds: [...item.cardIds, ...cardIds],
+                          dueToday: item.dueToday + cardIds.length,
+                        }
+                      : item,
+                  ),
+                );
                 setNotes((current) => [
                   {
                     id,
+                    subjectId,
                     title: note.title,
                     kind: note.kind,
                     detail: note.detail,
                     addedLabel: "Added just now",
                     summary: built.summary,
                     points: built.points,
-                    cardIds: built.cards.map((card) => card.id),
+                    cardIds,
                     fresh: true,
                   },
                   ...current,
@@ -201,13 +251,26 @@ export function StudyApp() {
           )}
           {screen === "setup" && (
             <OnboardingScreen
-              initialSubject={subject}
-              initialExam={examDate}
-              onCancel={() => setScreen("home")}
+              initialSubject="Organic Chemistry"
+              initialExam={addDays(TODAY, 4)}
+              onCancel={() => setScreen("dashboard")}
               onCreate={(nextSubject, nextExam) => {
-                setSubject(nextSubject);
-                setExamDate(nextExam);
-                setScreen("home");
+                const id = `s-${Date.now()}`;
+                setSubjects((current) =>
+                  sortByExam([
+                    ...current,
+                    {
+                      id,
+                      name: nextSubject,
+                      examDate: nextExam,
+                      dueToday: 0,
+                      streak: 0,
+                      cardIds: [],
+                    },
+                  ]),
+                );
+                setFilter(id);
+                setScreen("dashboard");
               }}
             />
           )}

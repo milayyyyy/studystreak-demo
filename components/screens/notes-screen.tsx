@@ -14,7 +14,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import type { NoteKind, StudyNote } from "@/lib/demo";
+import { SubjectFilter } from "@/components/subject-filter";
+import type { NoteKind, StudyNote, SubjectPlan } from "@/lib/demo";
 
 const ICONS: Record<NoteKind, typeof FileText> = {
   PDF: FileText,
@@ -27,6 +28,9 @@ export function NotesScreen({
   notes,
   onAdd,
   onOpen,
+  subjects,
+  filter,
+  onFilter,
 }: {
   subject: string;
   notes: StudyNote[];
@@ -37,6 +41,9 @@ export function NotesScreen({
     pasted: string;
   }) => void;
   onOpen: (noteId: string) => void;
+  subjects: SubjectPlan[];
+  filter: string;
+  onFilter: (id: string) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
@@ -79,6 +86,8 @@ export function NotesScreen({
           </p>
         </div>
       </header>
+
+      <SubjectFilter subjects={subjects} value={filter} onChange={onFilter} />
 
       <ul className="flex flex-col gap-3">
         {notes.map((note) => {
