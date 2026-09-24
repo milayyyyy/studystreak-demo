@@ -153,6 +153,18 @@
   -webkit-backface-visibility: hidden;
 }
 
+.flip-face-front {
+  transform: rotateY(0deg) translateZ(1px);
+}
+
 .flip-face-back {
-  transform: rotateY(180deg);
+  transform: rotateY(180deg) translateZ(1px);
+}
+
+.flip-card:not(.is-flipped) .flip-face-back {
+  visibility: hidden;
+}
+
+.flip-card.is-flipped .flip-face-front {
+  visibility: hidden;
 }

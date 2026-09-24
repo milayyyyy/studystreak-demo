@@ -102,7 +102,7 @@ export function ReviewScreen({
         aria-label={flipped ? "Show the question" : "Show the answer"}
       >
         <div className={`flip-card h-full ${flipped ? "is-flipped" : ""}`}>
-          <div className="flip-face flex flex-col justify-between rounded-[1.75rem] bg-white p-6 shadow-md ring-1 ring-orange-100">
+          <div className="flip-face flip-face-front flex flex-col justify-between rounded-[1.75rem] bg-white p-6 shadow-md ring-1 ring-orange-100">
             <p className="text-xs font-extrabold tracking-wide text-stone-400 uppercase">
               Question
             </p>
