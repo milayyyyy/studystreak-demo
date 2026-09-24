@@ -144,6 +144,11 @@ export function StudyApp() {
               onHome={() => setScreen(deckMode === "note" ? "summary" : "dashboard")}
               eyebrow={deckMode === "note" ? "From your notes" : "Daily review"}
               returnLabel={deckMode === "note" ? "Back to summary" : "Back to dashboard"}
+              subjects={
+                deckMode === "note" && openNote
+                  ? subjects.filter((item) => item.id === openNote.subjectId)
+                  : activeSubjects
+              }
             />
           )}
           {screen === "dashboard" && (

@@ -3,7 +3,7 @@
 import { PartyPopper, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress, ProgressIndicator, ProgressTrack } from "@/components/ui/progress";
-import type { Flashcard } from "@/lib/demo";
+import type { Flashcard, SubjectPlan } from "@/lib/demo";
 
 export function ReviewScreen({
   cards,
@@ -17,7 +17,8 @@ export function ReviewScreen({
   onRestart,
   onHome,
   eyebrow = "Daily review",
-  returnLabel = "Back to today",
+  returnLabel = "Back to dashboard",
+  subjects = [],
 }: {
   cards: Flashcard[];
   index: number;
@@ -31,7 +32,14 @@ export function ReviewScreen({
   onHome: () => void;
   eyebrow?: string;
   returnLabel?: string;
+  subjects?: SubjectPlan[];
 }) {
+  function subjectName(card: Flashcard) {
+    return (
+      subjects.find((subject) => subject.cardIds.includes(card.id))?.name ??
+      card.topic
+    );
+  }
   const total = cards.length;
   if (total === 0) {
     return (
@@ -41,11 +49,11 @@ export function ReviewScreen({
             {eyebrow}
           </p>
           <h1 className="mt-1 text-2xl font-extrabold tracking-tight">
-            No cards for this subject yet
+            {subjects.length === 1 ? subjects[0].name : "This subject"}
           </h1>
         </header>
         <p className="text-sm font-semibold text-stone-500">
-          Add a note and we’ll turn it into a small daily set.
+          No cards yet. Add a note and we’ll turn it into a small daily set.
         </p>
         <Button className="h-12 rounded-2xl text-base font-extrabold" onClick={onHome}>
           {returnLabel}
@@ -63,7 +71,9 @@ export function ReviewScreen({
       <div className="flex flex-col gap-4">
         <header>
           <p className="text-xs font-extrabold tracking-[0.16em] text-orange-500 uppercase">
-            Review
+            {cards.every((item) => subjectName(item) === subjectName(card))
+              ? subjectName(card)
+              : "All subjects"}
           </p>
           <h1 className="mt-1 text-2xl font-extrabold tracking-tight">
             Session complete
@@ -107,8 +117,11 @@ export function ReviewScreen({
             {eyebrow}
           </p>
           <h1 className="mt-1 text-2xl font-extrabold tracking-tight">
-            {position} of {total}
+            {subjectName(card)}
           </h1>
+          <p className="text-sm font-bold text-stone-500">
+            {position} of {total}
+          </p>
         </div>
         <p className="rounded-full bg-orange-100 px-3 py-1 text-xs font-extrabold text-orange-700">
           {card.topic}
@@ -129,7 +142,7 @@ export function ReviewScreen({
         <div className={`flip-card h-full ${flipped ? "is-flipped" : ""}`}>
           <div className="flip-face flip-face-front flex flex-col justify-between rounded-[1.75rem] bg-white p-6 shadow-md ring-1 ring-orange-100">
             <p className="text-xs font-extrabold tracking-wide text-stone-400 uppercase">
-              Question
+              {subjectName(card)} · Question
             </p>
             <p className="text-xl leading-snug font-extrabold text-stone-900">
               {card.question}
@@ -138,7 +151,7 @@ export function ReviewScreen({
           </div>
           <div className="flip-face flip-face-back flex flex-col justify-between rounded-[1.75rem] bg-stone-900 p-6 text-white shadow-md">
             <p className="text-xs font-extrabold tracking-wide text-orange-300 uppercase">
-              Answer
+              {subjectName(card)} · Answer
             </p>
             <p className="text-xl leading-snug font-extrabold">{card.answer}</p>
             <p className="text-sm font-bold text-orange-200">Tap to flip back</p>
