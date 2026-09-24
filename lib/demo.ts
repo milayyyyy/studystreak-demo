@@ -13,9 +13,13 @@ export type StudyNote = {
   kind: NoteKind
   detail: string
   addedLabel: string
+  summary: string
+  points: string[]
+  cardIds: string[]
+  fresh?: boolean
 }
 
-export type Screen = "home" | "review" | "notes" | "progress" | "setup"
+export type Screen = "home" | "review" | "notes" | "summary" | "progress" | "setup"
 
 export function startOfDay(date = new Date()) {
   const next = new Date(date)
@@ -170,6 +174,14 @@ export const STARTER_NOTES: StudyNote[] = [
     kind: "PDF",
     detail: "12 pages · lecture packet",
     addedLabel: "Added Fri",
+    summary:
+      "Cells stay organized with membranes and compartments. The nucleus holds DNA, ribosomes build proteins, and mitochondria turn food into ATP. Water follows solutes by osmosis, which is why a cell swells or shrinks depending on the solution around it.",
+    points: [
+      "Mitochondria make ATP, the cell’s usable energy.",
+      "Ribosomes assemble proteins by reading mRNA.",
+      "Osmosis is water moving toward the higher solute concentration.",
+    ],
+    cardIds: ["c1", "c2", "c3"],
   },
   {
     id: "n2",
@@ -177,6 +189,14 @@ export const STARTER_NOTES: StudyNote[] = [
     kind: "Notes",
     detail: "Handwritten summary",
     addedLabel: "Added Sun",
+    summary:
+      "Chloroplasts capture light and store it as glucose. Cellular respiration later releases that energy as ATP. Plants make the sugar; mitochondria in plants and animals spend it.",
+    points: [
+      "Chlorophyll in chloroplasts absorbs light.",
+      "Photosynthesis stores energy in glucose.",
+      "Cellular respiration releases that energy as ATP.",
+    ],
+    cardIds: ["c4", "c5"],
   },
   {
     id: "n3",
@@ -184,6 +204,14 @@ export const STARTER_NOTES: StudyNote[] = [
     kind: "Slides",
     detail: "8 slides · microscope lab",
     addedLabel: "Added Mon",
+    summary:
+      "The lab compares two kinds of division. Mitosis copies a body cell into two identical cells. Meiosis makes gametes and shuffles the genes, so the four daughter cells are not copies of the parent.",
+    points: [
+      "Mitosis produces two identical diploid cells.",
+      "Meiosis produces four unique haploid cells.",
+      "Count chromosomes on the slide before naming the phase.",
+    ],
+    cardIds: ["c6"],
   },
   {
     id: "n4",
@@ -191,8 +219,55 @@ export const STARTER_NOTES: StudyNote[] = [
     kind: "PDF",
     detail: "9 pages · practice problems",
     addedLabel: "Added Tue",
+    summary:
+      "DNA is a four-letter code. The genotype is that code, and the phenotype is the trait you can actually see. Environment can change the phenotype without rewriting the DNA.",
+    points: [
+      "DNA stands for deoxyribonucleic acid. A pairs with T, C with G.",
+      "Genotype is the genes. Phenotype is the visible trait.",
+      "The same genotype can look different in a different environment.",
+    ],
+    cardIds: ["c7", "c8"],
   },
 ]
+
+export function summarizeNote(title: string, pasted: string) {
+  const lines = pasted
+    .split(/\n+|(?<=[.!?])\s+/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 12)
+    .slice(0, 4)
+
+  const points =
+    lines.length >= 2
+      ? lines.slice(0, 3)
+      : [
+          `${title} has one core idea worth rereading in your own words.`,
+          "Turn the definition into a question you could answer cold.",
+          "Note one comparison the exam is likely to ask.",
+        ]
+
+  const summary =
+    pasted.trim().length > 40
+      ? pasted.trim().slice(0, 320)
+      : `${title} is ready as a short read. Study the key ideas first, then flip the cards that came from them so the wording sticks.`
+
+  const stamp = Date.now()
+  const cards: Flashcard[] = points.slice(0, 2).map((point, index) => ({
+    id: `c-${stamp}-${index}`,
+    topic: title,
+    question:
+      index === 0
+        ? `In your own words, what should you remember from ${title}?`
+        : `Which idea from ${title} would you still want to practice?`,
+    answer: point,
+  }))
+
+  return {
+    summary,
+    points,
+    cards,
+  }
+}
 
 export function defaultExamDate() {
   return addDays(TODAY, 18)

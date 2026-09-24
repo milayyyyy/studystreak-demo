@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FileText, Presentation, StickyNote, Upload } from "lucide-react";
+import { ChevronRight, FileText, Presentation, StickyNote, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import type { NoteKind, StudyNote } from "@/lib/demo";
 
 const ICONS: Record<NoteKind, typeof FileText> = {
@@ -25,19 +26,28 @@ export function NotesScreen({
   subject,
   notes,
   onAdd,
+  onOpen,
 }: {
   subject: string;
   notes: StudyNote[];
-  onAdd: (note: { title: string; kind: NoteKind; detail: string }) => void;
+  onAdd: (note: {
+    title: string;
+    kind: NoteKind;
+    detail: string;
+    pasted: string;
+  }) => void;
+  onOpen: (noteId: string) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [fileLabel, setFileLabel] = useState("");
+  const [pasted, setPasted] = useState("");
   const [kind, setKind] = useState<NoteKind>("PDF");
 
   function reset() {
     setTitle("");
     setFileLabel("");
+    setPasted("");
     setKind("PDF");
   }
 
@@ -47,7 +57,8 @@ export function NotesScreen({
     onAdd({
       title: clean,
       kind,
-      detail: fileLabel || "Added from this device",
+      detail: fileLabel || (pasted.trim() ? "Pasted notes" : "Added from this device"),
+      pasted,
     });
     reset();
     setOpen(false);
@@ -64,7 +75,7 @@ export function NotesScreen({
             {subject}
           </h1>
           <p className="mt-1 text-sm font-semibold text-stone-500">
-            {notes.length} sources broken into daily cards.
+            Open a note to study the summary, then the cards.
           </p>
         </div>
       </header>
@@ -73,24 +84,29 @@ export function NotesScreen({
         {notes.map((note) => {
           const Icon = ICONS[note.kind];
           return (
-            <li
-              key={note.id}
-              className="flex items-center gap-3 rounded-3xl bg-white p-4 shadow-sm ring-1 ring-orange-100"
-            >
-              <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-orange-50 text-orange-600">
-                <Icon className="size-5" />
-              </span>
-              <div className="min-w-0">
-                <p className="truncate font-extrabold text-stone-900">
-                  {note.title}
-                </p>
-                <p className="text-sm font-semibold text-stone-500">
-                  {note.kind} · {note.detail}
-                </p>
-                <p className="text-xs font-bold text-orange-500">
-                  {note.addedLabel}
-                </p>
-              </div>
+            <li key={note.id}>
+              <button
+                type="button"
+                onClick={() => onOpen(note.id)}
+                className="flex w-full items-center gap-3 rounded-3xl bg-white p-4 text-left shadow-sm ring-1 ring-orange-100"
+              >
+                <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-orange-50 text-orange-600">
+                  <Icon className="size-5" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-extrabold text-stone-900">
+                    {note.title}
+                  </span>
+                  <span className="block text-sm font-semibold text-stone-500">
+                    {note.kind} · {note.detail}
+                  </span>
+                  <span className="block text-xs font-bold text-orange-500">
+                    Summary ready · {note.cardIds.length}{" "}
+                    {note.cardIds.length === 1 ? "card" : "cards"}
+                  </span>
+                </span>
+                <ChevronRight className="size-4 shrink-0 text-orange-300" />
+              </button>
             </li>
           );
         })}
@@ -159,6 +175,18 @@ export function NotesScreen({
                   </button>
                 ))}
               </div>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="note-body" className="font-bold">
+                Paste notes
+              </Label>
+              <Textarea
+                id="note-body"
+                value={pasted}
+                placeholder="Optional. Paste a paragraph and we’ll summarize it into ideas and cards."
+                className="min-h-24 rounded-xl px-3 py-2"
+                onChange={(event) => setPasted(event.target.value)}
+              />
             </div>
             <label className="flex cursor-pointer flex-col items-center gap-2 rounded-2xl border border-dashed border-orange-300 bg-orange-50/70 px-4 py-6 text-center">
               <Upload className="size-5 text-orange-600" />

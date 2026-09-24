@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { BottomNav } from "@/components/bottom-nav";
 import { HomeScreen } from "@/components/screens/home-screen";
+import { NoteSummaryScreen } from "@/components/screens/note-summary-screen";
 import { NotesScreen } from "@/components/screens/notes-screen";
 import { OnboardingScreen } from "@/components/screens/onboarding-screen";
 import { ProgressScreen } from "@/components/screens/progress-screen";
@@ -17,7 +18,9 @@ import {
   REDISTRIBUTED_CARDS,
   STARTER_NOTES,
   studiedKeySet,
+  summarizeNote,
   TODAY,
+  type Flashcard,
   type Screen,
   type StudyNote,
 } from "@/lib/demo";
@@ -27,6 +30,9 @@ export function StudyApp() {
   const [subject, setSubject] = useState("Biology Midterm");
   const [examDate, setExamDate] = useState(defaultExamDate);
   const [notes, setNotes] = useState<StudyNote[]>(STARTER_NOTES);
+  const [extraCards, setExtraCards] = useState<Flashcard[]>([]);
+  const [openNoteId, setOpenNoteId] = useState<string | null>(null);
+  const [deckMode, setDeckMode] = useState<"daily" | "note">("daily");
   const [showMissed, setShowMissed] = useState(true);
   const [studiedToday, setStudiedToday] = useState(false);
   const [streak, setStreak] = useState(INITIAL_STREAK);
@@ -37,6 +43,17 @@ export function StudyApp() {
   const [finished, setFinished] = useState(false);
 
   const studiedKeys = useMemo(() => studiedKeySet(), []);
+  const allCards = useMemo(
+    () => [...FLASHCARDS, ...extraCards],
+    [extraCards],
+  );
+  const openNote = notes.find((note) => note.id === openNoteId) ?? null;
+  const deck = useMemo(() => {
+    if (deckMode === "daily" || !openNote) return FLASHCARDS;
+    const ids = new Set(openNote.cardIds);
+    const matched = allCards.filter((card) => ids.has(card.id));
+    return matched.length > 0 ? matched : FLASHCARDS;
+  }, [allCards, deckMode, openNote]);
   const dueCount = FLASHCARDS.length;
 
   function resetReview() {
@@ -59,7 +76,7 @@ export function StudyApp() {
     if (rating === "got") setGotIt((count) => count + 1);
     else setStillLearning((count) => count + 1);
     const next = index + 1;
-    if (next >= FLASHCARDS.length) {
+    if (next >= deck.length) {
       completeSession();
       return;
     }
@@ -72,6 +89,31 @@ export function StudyApp() {
   const averageMinutes = studiedToday
     ? Math.round((baseAverage * studiedKeys.size + 12) / studiedCount)
     : baseAverage;
+
+  const markSummarized = useCallback(() => {
+    if (!openNoteId) return;
+    setNotes((current) =>
+      current.map((note) =>
+        note.id === openNoteId ? { ...note, fresh: false } : note,
+      ),
+    );
+  }, [openNoteId]);
+
+  function openDailyReview() {
+    if (deckMode !== "daily") {
+      setDeckMode("daily");
+      resetReview();
+    } else if (finished) {
+      resetReview();
+    }
+    setScreen("review");
+  }
+
+  function openNoteReview() {
+    setDeckMode("note");
+    resetReview();
+    setScreen("review");
+  }
 
   return (
     <div className="min-h-dvh bg-[#F6E4D8] text-stone-900">
@@ -87,16 +129,13 @@ export function StudyApp() {
               studiedToday={studiedToday}
               showMissed={showMissed}
               onDismissMissed={() => setShowMissed(false)}
-              onStart={() => {
-                if (finished) resetReview();
-                setScreen("review");
-              }}
+              onStart={openDailyReview}
               onSetup={() => setScreen("setup")}
             />
           )}
           {screen === "review" && (
             <ReviewScreen
-              cards={FLASHCARDS}
+              cards={deck}
               index={index}
               flipped={flipped}
               gotIt={gotIt}
@@ -105,7 +144,9 @@ export function StudyApp() {
               onFlip={() => setFlipped((value) => !value)}
               onRate={rate}
               onRestart={resetReview}
-              onHome={() => setScreen("home")}
+              onHome={() => setScreen(deckMode === "note" ? "summary" : "home")}
+              eyebrow={deckMode === "note" ? "From your notes" : "Daily review"}
+              returnLabel={deckMode === "note" ? "Back to summary" : "Back to today"}
             />
           )}
           {screen === "notes" && (
@@ -113,17 +154,39 @@ export function StudyApp() {
               subject={subject}
               notes={notes}
               onAdd={(note) => {
+                const built = summarizeNote(note.title, note.pasted);
+                const id = `n-${Date.now()}`;
+                setExtraCards((current) => [...built.cards, ...current]);
                 setNotes((current) => [
                   {
-                    id: `n-${Date.now()}`,
+                    id,
                     title: note.title,
                     kind: note.kind,
                     detail: note.detail,
                     addedLabel: "Added just now",
+                    summary: built.summary,
+                    points: built.points,
+                    cardIds: built.cards.map((card) => card.id),
+                    fresh: true,
                   },
                   ...current,
                 ]);
+                setOpenNoteId(id);
+                setScreen("summary");
               }}
+              onOpen={(noteId) => {
+                setOpenNoteId(noteId);
+                setScreen("summary");
+              }}
+            />
+          )}
+          {screen === "summary" && openNote && (
+            <NoteSummaryScreen
+              note={openNote}
+              cards={allCards.filter((card) => openNote.cardIds.includes(card.id))}
+              onBack={() => setScreen("notes")}
+              onStudyCards={openNoteReview}
+              onSummarized={markSummarized}
             />
           )}
           {screen === "progress" && (
@@ -151,9 +214,12 @@ export function StudyApp() {
         </main>
         {screen !== "setup" && (
           <BottomNav
-            screen={screen}
+            screen={screen === "summary" ? "notes" : screen}
             onChange={(next) => {
-              if (next === "review" && finished) resetReview();
+              if (next === "review") {
+                openDailyReview();
+                return;
+              }
               setScreen(next);
             }}
           />

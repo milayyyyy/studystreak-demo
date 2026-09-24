@@ -16,6 +16,8 @@ export function ReviewScreen({
   onRate,
   onRestart,
   onHome,
+  eyebrow = "Daily review",
+  returnLabel = "Back to today",
 }: {
   cards: Flashcard[];
   index: number;
@@ -27,6 +29,8 @@ export function ReviewScreen({
   onRate: (rating: "got" | "learning") => void;
   onRestart: () => void;
   onHome: () => void;
+  eyebrow?: string;
+  returnLabel?: string;
 }) {
   const total = cards.length;
   const position = Math.min(index + 1, total);
@@ -60,7 +64,7 @@ export function ReviewScreen({
           className="h-12 rounded-2xl text-base font-extrabold"
           onClick={onHome}
         >
-          Back to today
+          {returnLabel}
         </Button>
         <Button
           variant="outline"
@@ -79,7 +83,7 @@ export function ReviewScreen({
       <header className="flex items-end justify-between gap-3">
         <div>
           <p className="text-xs font-extrabold tracking-[0.16em] text-orange-500 uppercase">
-            Daily review
+            {eyebrow}
           </p>
           <h1 className="mt-1 text-2xl font-extrabold tracking-tight">
             {position} of {total}
