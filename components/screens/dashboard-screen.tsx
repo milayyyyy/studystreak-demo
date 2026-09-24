@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, CalendarDays, Flame, Layers, Plus } from "lucide-react";
+import { BookOpen, CalendarDays, Flame, Layers, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SubjectFilter } from "@/components/subject-filter";
 import {
@@ -19,6 +19,10 @@ export function DashboardScreen({
   onFilter,
   onOpen,
   onAdd,
+  showMissed,
+  studiedToday,
+  onDismissMissed,
+  onStart,
 }: {
   subjects: SubjectPlan[];
   notes: StudyNote[];
@@ -26,11 +30,15 @@ export function DashboardScreen({
   onFilter: (id: string) => void;
   onOpen: (id: string) => void;
   onAdd: () => void;
+  showMissed: boolean;
+  studiedToday: boolean;
+  onDismissMissed: () => void;
+  onStart: () => void;
 }) {
   const visible =
     filter === "all" ? subjects : subjects.filter((subject) => subject.id === filter);
   const soonest = subjects[0];
-  const cardsDue = subjects.reduce((sum, subject) => sum + subject.dueToday, 0);
+  const cardsDue = visible.reduce((sum, subject) => sum + subject.dueToday, 0);
   const daysToSoonest = soonest ? Math.max(0, daysBetween(TODAY, soonest.examDate)) : 0;
 
   return (
@@ -59,6 +67,23 @@ export function DashboardScreen({
 
       <SubjectFilter subjects={subjects} value={filter} onChange={onFilter} />
 
+      {showMissed && !studiedToday && (
+        <div className="flex gap-3 rounded-3xl border border-amber-200 bg-amber-50 p-4 text-amber-950">
+          <p className="flex-1 text-sm leading-relaxed font-semibold">
+            You missed yesterday — no worries, we&apos;ve adjusted today&apos;s
+            cards so you&apos;re still on track.
+          </p>
+          <button
+            type="button"
+            aria-label="Dismiss message"
+            onClick={onDismissMissed}
+            className="grid size-8 shrink-0 place-items-center rounded-full text-amber-700 hover:bg-amber-100"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+      )}
+
       {soonest && filter === "all" && (
         <section className="rounded-[1.75rem] bg-gradient-to-br from-orange-500 to-rose-500 p-5 text-white shadow-lg shadow-orange-200">
           <p className="text-xs font-extrabold tracking-wide text-orange-50 uppercase">
@@ -77,6 +102,13 @@ export function DashboardScreen({
         <Stat label="Due today" value={String(cardsDue)} />
         <Stat label="Notes" value={String(notes.length)} />
       </div>
+
+      <Button
+        className="h-12 rounded-2xl text-base font-extrabold shadow-md shadow-orange-200"
+        onClick={onStart}
+      >
+        {studiedToday ? "Review again" : `Start Review · ${cardsDue} cards`}
+      </Button>
 
       <ul className="flex flex-col gap-3">
         {visible.map((subject, index) => {

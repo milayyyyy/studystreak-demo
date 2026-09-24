@@ -30,7 +30,6 @@ export type SubjectPlan = {
 }
 
 export type Screen =
-  | "home"
   | "dashboard"
   | "review"
   | "notes"

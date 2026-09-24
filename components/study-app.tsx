@@ -3,7 +3,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { BottomNav } from "@/components/bottom-nav";
 import { DashboardScreen } from "@/components/screens/dashboard-screen";
-import { HomeScreen } from "@/components/screens/home-screen";
 import { NoteSummaryScreen } from "@/components/screens/note-summary-screen";
 import { NotesScreen } from "@/components/screens/notes-screen";
 import { OnboardingScreen } from "@/components/screens/onboarding-screen";
@@ -17,7 +16,6 @@ import {
   FLASHCARDS,
   INITIAL_STREAK,
   LONGEST_STREAK,
-  REDISTRIBUTED_CARDS,
   sortByExam,
   STARTER_NOTES,
   starterSubjects,
@@ -31,7 +29,7 @@ import {
 } from "@/lib/demo";
 
 export function StudyApp() {
-  const [screen, setScreen] = useState<Screen>("home");
+  const [screen, setScreen] = useState<Screen>("dashboard");
   const [subjects, setSubjects] = useState<SubjectPlan[]>(() =>
     sortByExam(starterSubjects()),
   );
@@ -68,7 +66,6 @@ export function StudyApp() {
     const dailyIds = new Set(activeSubjects.flatMap((item) => item.cardIds));
     return allCards.filter((card) => dailyIds.has(card.id));
   }, [activeSubjects, allCards, deckMode, openNote]);
-  const dueCount = activeSubjects.reduce((sum, item) => sum + item.dueToday, 0);
 
   function resetReview() {
     setIndex(0);
@@ -133,26 +130,6 @@ export function StudyApp() {
     <div className="min-h-dvh bg-[#F6E4D8] text-stone-900">
       <div className="relative mx-auto min-h-dvh w-full max-w-md bg-[#FFF8F3] shadow-[0_0_0_1px_rgba(251,146,60,0.15)]">
         <main className="px-4 pt-6 pb-28">
-          {screen === "home" && (
-            <HomeScreen
-              subject={filter === "all" ? "All subjects" : focus.name}
-              examDate={focus.examDate}
-              streak={filter === "all" ? streak : focus.streak}
-              dueCount={dueCount}
-              redistributed={filter === "all" || filter === "bio" ? REDISTRIBUTED_CARDS : 0}
-              studiedToday={studiedToday}
-              showMissed={showMissed && (filter === "all" || filter === "bio")}
-              onDismissMissed={() => setShowMissed(false)}
-              onStart={openDailyReview}
-              onSetup={() => setScreen("setup")}
-              subjects={subjects}
-              filter={filter}
-              onFilter={(id) => {
-                setFilter(id);
-                if (deckMode === "daily") resetReview();
-              }}
-            />
-          )}
           {screen === "review" && (
             <ReviewScreen
               cards={deck}
@@ -164,9 +141,9 @@ export function StudyApp() {
               onFlip={() => setFlipped((value) => !value)}
               onRate={rate}
               onRestart={resetReview}
-              onHome={() => setScreen(deckMode === "note" ? "summary" : "home")}
+              onHome={() => setScreen(deckMode === "note" ? "summary" : "dashboard")}
               eyebrow={deckMode === "note" ? "From your notes" : "Daily review"}
-              returnLabel={deckMode === "note" ? "Back to summary" : "Back to today"}
+              returnLabel={deckMode === "note" ? "Back to summary" : "Back to dashboard"}
             />
           )}
           {screen === "dashboard" && (
@@ -174,12 +151,16 @@ export function StudyApp() {
               subjects={subjects}
               notes={notes}
               filter={filter}
-              onFilter={setFilter}
-              onOpen={(id) => {
+              onFilter={(id) => {
                 setFilter(id);
-                setScreen("home");
+                if (deckMode === "daily") resetReview();
               }}
+              onOpen={(id) => setFilter(id)}
               onAdd={() => setScreen("setup")}
+              showMissed={showMissed && (filter === "all" || filter === "bio")}
+              studiedToday={studiedToday}
+              onDismissMissed={() => setShowMissed(false)}
+              onStart={openDailyReview}
             />
           )}
           {screen === "notes" && (
