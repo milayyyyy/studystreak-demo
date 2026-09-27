@@ -215,7 +215,8 @@ export function NotesScreen({
               disabled={selectedReviewModes.length === 0 || !pendingNote}
               onClick={() => {
                 if (!pendingNote) return;
-                const reviewModes = selectedReviewModes.length > 0 ? selectedReviewModes : ["Mixed"];
+                const reviewModes: ReviewMode[] =
+                  selectedReviewModes.length > 0 ? selectedReviewModes : ["Mixed"];
                 onAdd({
                   ...pendingNote,
                   reviewMode: reviewModes,
