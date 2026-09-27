@@ -50,13 +50,13 @@ export function OnboardingScreen({
     const span = Math.max(1, daysBetween(TODAY, built.exam));
     const perDay = Math.max(6, Math.min(12, Math.round(48 / Math.max(span, 1))));
     return (
-      <div className="flex flex-col gap-4">
-        <div className="rounded-[1.75rem] bg-gradient-to-br from-orange-500 to-rose-500 p-6 text-white shadow-lg shadow-orange-200">
+      <div className="mx-auto flex w-full max-w-xl flex-col gap-4">
+        <div className="rounded-[1.75rem] bg-gradient-to-br from-[#0D2F64] to-[#1B7EE9] p-6 text-white shadow-lg shadow-[#c5dcf7]">
           <Flame className="size-8" />
           <h1 className="mt-4 text-2xl font-extrabold leading-tight">
             We&apos;ll break this into small daily reviews for you.
           </h1>
-          <p className="mt-3 text-sm font-semibold text-orange-50">
+          <p className="mt-3 text-sm font-semibold text-[#d7e9ff]">
             {built.subject} is paced backward from {formatLong(built.exam)}.
             About {perDay} cards a day for {span} day{span === 1 ? "" : "s"} —
             short enough to finish between classes.
@@ -73,21 +73,21 @@ export function OnboardingScreen({
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="mx-auto flex w-full max-w-xl flex-col gap-5">
       <header>
-        <p className="text-xs font-extrabold tracking-[0.16em] text-orange-500 uppercase">
+        <p className="text-xs font-extrabold tracking-[0.16em] text-[#1B7EE9] uppercase">
           New plan
         </p>
         <h1 className="mt-1 text-3xl font-extrabold tracking-tight">
           What are you studying for?
         </h1>
-        <p className="mt-2 text-sm font-semibold leading-relaxed text-stone-500">
+        <p className="mt-2 text-sm font-semibold leading-relaxed text-[#6d86a8]">
           Tell us the subject and the exam date. StudyStreak splits the work
           into daily flashcards so you don&apos;t have to cram the night before.
         </p>
       </header>
 
-      <div className="flex flex-col gap-4 rounded-[1.75rem] bg-white p-5 shadow-sm ring-1 ring-orange-100">
+      <div className="flex flex-col gap-4 rounded-[1.75rem] bg-white p-5 shadow-sm ring-1 ring-[#dfeaf7]">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="subject" className="font-extrabold">
             Subject
@@ -127,7 +127,7 @@ export function OnboardingScreen({
         </Button>
         <Button
           variant="ghost"
-          className="h-10 rounded-2xl font-bold text-stone-500"
+          className="h-10 rounded-2xl font-bold text-[#6d86a8]"
           onClick={onCancel}
         >
           Back to Biology Midterm

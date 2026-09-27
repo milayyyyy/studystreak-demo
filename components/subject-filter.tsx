@@ -24,8 +24,8 @@ export function SubjectFilter({
             onClick={() => onChange(option.id)}
             className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-extrabold ${
               active
-                ? "bg-orange-500 text-white"
-                : "bg-white text-stone-600 ring-1 ring-orange-100"
+                ? "bg-[#0D2F64] text-white"
+                : "bg-white text-[#496a98] ring-1 ring-[#dfeaf7]"
             }`}
           >
             {option.name}

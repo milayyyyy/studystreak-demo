@@ -7,6 +7,20 @@ export type Flashcard = {
 
 export type NoteKind = "PDF" | "Notes" | "Slides"
 
+export type ReviewMode =
+  | "Flashcards"
+  | "Identification"
+  | "Short answer"
+  | "Multiple choice"
+  | "Mixed"
+
+export function formatReviewModes(modes?: ReviewMode[] | ReviewMode) {
+  const list = Array.isArray(modes) ? modes : modes ? [modes] : ["Flashcards"];
+  if (list.length === 0) return "Flashcards";
+  if (list.length === 1) return list[0];
+  return list.join(", ");
+}
+
 export type StudyNote = {
   id: string
   subjectId: string
@@ -17,6 +31,7 @@ export type StudyNote = {
   summary: string
   points: string[]
   cardIds: string[]
+  reviewMode?: ReviewMode[]
   fresh?: boolean
 }
 
@@ -343,6 +358,7 @@ export const STARTER_NOTES: StudyNote[] = [
       "La cuenta, por favor ends the meal.",
     ],
     cardIds: ["s1", "s2", "s3", "s4"],
+    reviewMode: ["Identification", "Multiple choice", "Mixed"],
   },
   {
     id: "n6",

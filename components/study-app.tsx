@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import { Brand } from "@/components/brand";
 import { BottomNav } from "@/components/bottom-nav";
 import { DashboardScreen } from "@/components/screens/dashboard-screen";
 import { NoteSummaryScreen } from "@/components/screens/note-summary-screen";
@@ -45,6 +46,14 @@ export function StudyApp() {
   const [flipped, setFlipped] = useState(false);
   const [gotIt, setGotIt] = useState(0);
   const [stillLearning, setStillLearning] = useState(0);
+  const [confidence, setConfidence] = useState({
+    easy: 0,
+    good: 0,
+    hard: 0,
+    again: 0,
+  });
+  const [reminderEnabled, setReminderEnabled] = useState(true);
+  const [reminderTime, setReminderTime] = useState("07:30");
   const [finished, setFinished] = useState(false);
 
   const studiedKeys = useMemo(() => studiedKeySet(), []);
@@ -83,9 +92,15 @@ export function StudyApp() {
     setFinished(true);
   }
 
-  function rate(rating: "got" | "learning") {
-    if (rating === "got") setGotIt((count) => count + 1);
-    else setStillLearning((count) => count + 1);
+  function rate(rating: "easy" | "good" | "hard" | "again") {
+    setConfidence((current) => ({ ...current, [rating]: current[rating] + 1 }));
+
+    if (rating === "easy" || rating === "good") {
+      setGotIt((count) => count + 1);
+    } else {
+      setStillLearning((count) => count + 1);
+    }
+
     const next = index + 1;
     if (next >= deck.length) {
       completeSession();
@@ -127,9 +142,28 @@ export function StudyApp() {
   }
 
   return (
-    <div className="min-h-dvh bg-[#F6E4D8] text-stone-900">
-      <div className="relative mx-auto min-h-dvh w-full max-w-md bg-[#FFF8F3] shadow-[0_0_0_1px_rgba(251,146,60,0.15)]">
-        <main className="px-4 pt-6 pb-28">
+    <div className="min-h-dvh bg-[#F3F7FF] text-[#102D52]">
+      {screen !== "setup" && (
+        <BottomNav
+          screen={screen === "summary" ? "notes" : screen}
+          onChange={(next) => {
+            if (next === "review") {
+              openDailyReview();
+              return;
+            }
+            setScreen(next);
+          }}
+        />
+      )}
+      {screen === "setup" && (
+        <header className="sticky top-0 z-40 border-b border-[#dfeaf7] bg-white/90 backdrop-blur-md">
+          <div className="mx-auto flex max-w-6xl items-center px-4 py-3 sm:px-6 lg:px-8">
+            <Brand compact />
+          </div>
+        </header>
+      )}
+      <div className="mx-auto w-full max-w-6xl">
+        <main className="px-4 pt-5 pb-[calc(6.75rem+env(safe-area-inset-bottom))] sm:px-6 md:pb-12 lg:px-8 lg:pt-8">
           {screen === "review" && (
             <ReviewScreen
               cards={deck}
@@ -138,12 +172,21 @@ export function StudyApp() {
               gotIt={gotIt}
               stillLearning={stillLearning}
               finished={finished}
+              confidence={confidence}
               onFlip={() => setFlipped((value) => !value)}
               onRate={rate}
               onRestart={resetReview}
               onHome={() => setScreen(deckMode === "note" ? "summary" : "dashboard")}
               eyebrow={deckMode === "note" ? "From your notes" : "Daily review"}
               returnLabel={deckMode === "note" ? "Back to summary" : "Back to dashboard"}
+              reviewTypes={
+                deckMode === "note"
+                  ? openNote?.reviewMode ??
+                    (openNote?.subjectId === "spanish"
+                      ? ["Identification", "Multiple choice", "Mixed"]
+                      : ["Flashcards"])
+                  : ["Mixed"]
+              }
               subjects={
                 deckMode === "note" && openNote
                   ? subjects.filter((item) => item.id === openNote.subjectId)
@@ -166,6 +209,12 @@ export function StudyApp() {
               studiedToday={studiedToday}
               onDismissMissed={() => setShowMissed(false)}
               onStart={openDailyReview}
+              reminderEnabled={reminderEnabled}
+              reminderTime={reminderTime}
+              dailyGoal={subjects.reduce((sum, subject) => sum + subject.dueToday, 0)}
+              backlogAdjusted={showMissed && !studiedToday}
+              onToggleReminder={() => setReminderEnabled((value) => !value)}
+              onTimeChange={(time) => setReminderTime(time)}
             />
           )}
           {screen === "notes" && (
@@ -192,21 +241,20 @@ export function StudyApp() {
                       : item,
                   ),
                 );
-                setNotes((current) => [
-                  {
-                    id,
-                    subjectId,
-                    title: note.title,
-                    kind: note.kind,
-                    detail: note.detail,
-                    addedLabel: "Added just now",
-                    summary: built.summary,
-                    points: built.points,
-                    cardIds,
-                    fresh: true,
-                  },
-                  ...current,
-                ]);
+                const savedNote = {
+                  id,
+                  subjectId,
+                  title: note.title,
+                  kind: note.kind,
+                  detail: note.detail,
+                  addedLabel: "Added just now",
+                  summary: built.summary,
+                  points: built.points,
+                  cardIds,
+                  reviewMode: note.reviewMode,
+                  fresh: true,
+                };
+                setNotes((current) => [savedNote, ...current]);
                 setOpenNoteId(id);
                 setScreen("summary");
               }}
@@ -261,18 +309,6 @@ export function StudyApp() {
             />
           )}
         </main>
-        {screen !== "setup" && (
-          <BottomNav
-            screen={screen === "summary" ? "notes" : screen}
-            onChange={(next) => {
-              if (next === "review") {
-                openDailyReview();
-                return;
-              }
-              setScreen(next);
-            }}
-          />
-        )}
         <p className="sr-only">
           Demo date {dateKey(TODAY)}. Local only, no account required.
         </p>

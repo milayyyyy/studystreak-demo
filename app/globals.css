@@ -49,38 +49,38 @@
 }
 
 :root {
-  --background: oklch(0.985 0.012 75);
-  --foreground: oklch(0.28 0.04 45);
-  --card: oklch(1 0.004 80);
-  --card-foreground: oklch(0.28 0.04 45);
-  --popover: oklch(1 0.004 80);
-  --popover-foreground: oklch(0.28 0.04 45);
-  --primary: oklch(0.68 0.19 42);
-  --primary-foreground: oklch(0.99 0.01 85);
-  --secondary: oklch(0.96 0.02 70);
-  --secondary-foreground: oklch(0.35 0.06 45);
-  --muted: oklch(0.96 0.015 75);
-  --muted-foreground: oklch(0.5 0.04 50);
-  --accent: oklch(0.95 0.03 65);
-  --accent-foreground: oklch(0.35 0.08 40);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.91 0.02 70);
-  --input: oklch(0.91 0.02 70);
-  --ring: oklch(0.68 0.19 42);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  --background: #f3f7ff;
+  --foreground: #102d52;
+  --card: #ffffff;
+  --card-foreground: #102d52;
+  --popover: #ffffff;
+  --popover-foreground: #102d52;
+  --primary: #0d2f64;
+  --primary-foreground: #f5faff;
+  --secondary: #ebf4ff;
+  --secondary-foreground: #163d6d;
+  --muted: #eef5ff;
+  --muted-foreground: #4f6f9f;
+  --accent: #f6c74a;
+  --accent-foreground: #12345a;
+  --destructive: #e25757;
+  --border: #dfeaf7;
+  --input: #edf4ff;
+  --ring: #1b7ee9;
+  --chart-1: #0d2f64;
+  --chart-2: #1a6edc;
+  --chart-3: #1ca5d9;
+  --chart-4: #f7c74b;
+  --chart-5: #8ec9ff;
   --radius: 0.9rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: #f8faff;
+  --sidebar-foreground: #0d2f64;
+  --sidebar-primary: #0d2f64;
+  --sidebar-primary-foreground: #f5faff;
+  --sidebar-accent: #ebf4ff;
+  --sidebar-accent-foreground: #0d2f64;
+  --sidebar-border: #dfeaf7;
+  --sidebar-ring: #1b7ee9;
 }
 
 .dark {
@@ -121,11 +121,12 @@
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
   html {
     @apply font-sans;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-background text-foreground;
   }
   button, a, [role="button"] {
     touch-action: manipulation;

@@ -12,18 +12,31 @@ export const metadata: Metadata = {
   title: "StudyStreak",
   description:
     "Small daily flashcard reviews, paced back from your exam, so the habit sticks longer than a cram session.",
+  icons: {
+    icon: "/logo.jpg",
+    apple: "/logo.jpg",
+  },
+  appleWebApp: {
+    capable: true,
+    title: "StudyStreak",
+    statusBarStyle: "default",
+  },
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#FFF6F0",
+  viewportFit: "cover",
+  themeColor: "#0D2F64",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${nunito.variable} h-full antialiased`}>
-      <body className="min-h-full bg-[#FFF6F0] font-sans text-stone-900">
+      <body className="min-h-full overflow-x-clip bg-[#F3F7FF] font-sans text-[#102D52]">
         {children}
       </body>
     </html>
